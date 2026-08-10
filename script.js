@@ -243,9 +243,9 @@ function updateArchiveBanner() {
 
 function openArchive() {
   const label = getCategoryLabel(currentCategory);
-  // Filter the full archive to show only the current category
+  // Filter the full archive to show only the current category and language
   const allArchive = loadArchive();
-  const catArchive = allArchive.filter(a => a.ba_category === currentCategory);
+  const catArchive = allArchive.filter(a => a.ba_category === currentCategory && (a.lang === currentLang || (!a.lang && currentLang === 'en')));
 
   // Update overlay header dynamically
   const headerH2 = document.querySelector('#archive-overlay .archive-header-left h2');
@@ -257,7 +257,11 @@ function openArchive() {
     searchInput.placeholder = `Search all ${label} headlines by title, source, or description...`;
   }
 
-  document.getElementById('archive-overlay').classList.add('open');
+  const overlay = document.getElementById('archive-overlay');
+  overlay.classList.add('open');
+  // Always open with sidebar open on mobile
+  overlay.classList.add('sidebar-open');
+
   document.body.style.overflow = 'hidden';
   document.getElementById('archive-search-input').value = '';
   archiveSelectedDate = null;
@@ -265,9 +269,15 @@ function openArchive() {
 }
 
 function closeArchive() {
-  document.getElementById('archive-overlay').classList.remove('open');
+  const overlay = document.getElementById('archive-overlay');
+  overlay.classList.remove('open');
+  overlay.classList.remove('sidebar-open');
   document.body.style.overflow = '';
   archiveSelectedDate = null;
+}
+
+function showArchiveSidebarOnMobile() {
+  document.getElementById('archive-overlay').classList.add('sidebar-open');
 }
 
 /** Group archive articles by date (YYYY-MM-DD) and build sidebar */
@@ -316,11 +326,16 @@ function renderArchiveSidebar(articles) {
       btn.className = 'archive-day-btn' + (archiveSelectedDate === dateKey ? ' active' : '');
       btn.dataset.dateKey = dateKey;
       btn.innerHTML = `<span>${dayLabel}</span>`;
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
         document.querySelectorAll('.archive-day-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         archiveSelectedDate = dateKey;
         renderArchiveArticles(dateArts, dayLabel);
+        // On mobile, hide the sidebar after selecting a date to reveal the articles
+        // Only trigger this if it's a real user click (isTrusted), keeping sidebar open initially
+        if (e.isTrusted) {
+          document.getElementById('archive-overlay').classList.remove('sidebar-open');
+        }
       });
       monthDiv.appendChild(btn);
     });
@@ -376,15 +391,20 @@ function renderArchiveArticles(articles, dayLabel) {
 function onArchiveSearch(query) {
   const q = (query || '').trim().toLowerCase();
   const label = getCategoryLabel(currentCategory);
-  // Always restrict to current category
-  const catArchive = loadArchive().filter(a => a.ba_category === currentCategory);
+  // Always restrict to current category and language
+  const catArchive = loadArchive().filter(a => a.ba_category === currentCategory && (a.lang === currentLang || (!a.lang && currentLang === 'en')));
 
   if (!q) {
     // Reset to full category date-based view
     archiveSelectedDate = null;
+    // On mobile, show the sidebar dates list again when search is cleared
+    document.getElementById('archive-overlay').classList.add('sidebar-open');
     renderArchiveSidebar(catArchive);
     return;
   }
+
+  // On mobile, hide the sidebar to show search results directly
+  document.getElementById('archive-overlay').classList.remove('sidebar-open');
 
   const results = catArchive.filter(a => {
     const title = (a.title || '').toLowerCase();
@@ -545,6 +565,21 @@ function registerEventListeners() {
     }
   });
 
+  // Real-time search input filtering
+  elements.searchField.addEventListener('input', () => {
+    const hasValue = elements.searchField.value.trim().length > 0;
+    elements.clearSearchBtn.classList.toggle('show', hasValue);
+    applyFilters();
+  });
+
+  // Clear search input action
+  elements.clearSearchBtn.addEventListener('click', () => {
+    elements.searchField.value = '';
+    elements.clearSearchBtn.classList.remove('show');
+    elements.searchField.focus();
+    applyFilters();
+  });
+
   // Bookmarks page toggle
   elements.bookmarkToggle.addEventListener('click', () => {
     isShowingBookmarks = !isShowingBookmarks;
@@ -598,15 +633,19 @@ async function loadNews(category) {
       mergeIntoArchive(articles, category);
     }
 
-    const categoryArchive = loadArchive().filter(a => a.ba_category === category);
-    loadedArticles = categoryArchive.length > 0 ? categoryArchive.slice(0, HOMEPAGE_LIMIT) : articles.slice(0, HOMEPAGE_LIMIT);
+    if (articles.length === 0) {
+      const categoryArchive = loadArchive().filter(a => a.ba_category === category && (a.lang === currentLang || (!a.lang && currentLang === 'en')));
+      loadedArticles = categoryArchive.slice(0, HOMEPAGE_LIMIT);
+    } else {
+      loadedArticles = articles.slice(0, HOMEPAGE_LIMIT);
+    }
 
     applyFilters();
     
   } catch (err) {
     console.error('Error fetching news:', err);
     
-    const categoryArchive = loadArchive().filter(a => a.ba_category === category);
+    const categoryArchive = loadArchive().filter(a => a.ba_category === category && (a.lang === currentLang || (!a.lang && currentLang === 'en')));
     if (categoryArchive.length > 0) {
       loadedArticles = categoryArchive.slice(0, HOMEPAGE_LIMIT);
       showToast(translations[currentLang].offlineModeToast);

@@ -219,9 +219,14 @@
   <div class="archive-overlay" id="archive-overlay">
     <!-- Archive Header -->
     <div class="archive-header">
-      <div class="archive-header-left">
-        <h2>News Archive</h2>
-        <p id="archive-header-subtitle">Browse all previously collected headlines</p>
+      <div class="archive-header-left" style="display: flex; align-items: center; gap: 12px;">
+        <button id="archive-back-btn" class="archive-back-btn" onclick="showArchiveSidebarOnMobile()" aria-label="Back to Dates">
+          ← Dates
+        </button>
+        <div>
+          <h2>News Archive</h2>
+          <p id="archive-header-subtitle">Browse all previously collected headlines</p>
+        </div>
       </div>
       <button class="archive-close-btn" onclick="closeArchive()" aria-label="Close Archive">&times;</button>
     </div>

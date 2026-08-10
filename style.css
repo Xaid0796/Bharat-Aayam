@@ -290,11 +290,18 @@ header.scrolled {
   position: absolute;
   right: 16px;
   color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
   display: none;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-speed);
 }
 
 .clear-search-btn.show {
-  display: block;
+  display: flex;
 }
 
 .clear-search-btn:hover {
@@ -1421,8 +1428,37 @@ body::before {
   font-size: 14px;
 }
 
+.archive-back-btn {
+  display: none;
+}
+
 /* Mobile archive layout */
 @media (max-width: 640px) {
+  /* Show back button only when the sidebar is NOT open (i.e. showing articles) */
+  .archive-overlay:not(.sidebar-open) .archive-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    box-shadow: var(--shadow-sm);
+    transition: background var(--transition-speed);
+  }
+  .archive-overlay:not(.sidebar-open) .archive-back-btn:hover {
+    background: var(--border-color);
+  }
+
+  .archive-body {
+    position: relative;
+  }
+
   .archive-sidebar {
     display: none;
   }
