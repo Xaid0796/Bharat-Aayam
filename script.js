@@ -370,7 +370,7 @@ function renderArchiveArticles(articles, dayLabel) {
     const item = document.createElement('div');
     item.className = 'archive-article-item';
     item.innerHTML = `
-      ${img ? `<img class="archive-article-thumb" src="${escapeHtml(img)}" alt="" onerror="this.style.display='none'">` : ''}
+      ${img ? `<img class="archive-article-thumb" src="${escapeHtml(img)}" alt="${escapeHtml(article.title || 'News article thumbnail')}" onerror="this.style.display='none'">` : ''}
       <div class="archive-article-info">
         <div class="archive-article-cat">${escapeHtml(cat)}</div>
         <div class="archive-article-title">${escapeHtml(article.title || '')}</div>
@@ -751,7 +751,7 @@ function renderNews(articles) {
     card.innerHTML = `
       <div class="card-image-wrapper">
         ${imageSrc ? 
-          `<img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='9'></svg>" data-src="${imageSrc}" class="news-img lazy-image" alt="News article Image" onerror="this.outerHTML=SVG_PLACEHOLDER">` 
+          `<img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='9'></svg>" data-src="${imageSrc}" class="news-img lazy-image" alt="${escapeHtml(article.title || 'News article image')}" onerror="this.outerHTML=SVG_PLACEHOLDER">` 
           : SVG_PLACEHOLDER
         }
         <div class="card-badge">${escapeHtml(article.source.name || 'News')}</div>

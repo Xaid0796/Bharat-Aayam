@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://xaid0796.github.io/Bharat-Aayam/sitemap.xml
